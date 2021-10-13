@@ -4,7 +4,9 @@ axios.defaults.headers.common["X-Auth-Token"] =
 
 function getTodos() {
   axios
-    .get("https://jsonplaceholder.typicode.com/todos?_limit=5")
+    .get("https://jsonplaceholder.typicode.com/todos?_limit=5", {
+      timeout: 1000,
+    })
     .then((res) => showOutput(res))
     .catch((error) => console.log(error));
 }
@@ -81,6 +83,48 @@ function transformResponse() {
   };
 
   axios(options).then((res) => showOutput(res));
+}
+
+function errorHandling() {
+  axios
+    .get("https://jsonplaceholder.typicode.com/todoss", {
+      validateStatus: function (status) {
+        return status < 500;
+      },
+    })
+    .then((res) => showOutput(res))
+    .catch((err) => {
+      if (err.response) {
+        console.log(err.response.data);
+        console.log(err.response.status);
+        console.log(err.response.headers);
+        if (err.response.status === 404) {
+          alert("Error: Page Not Found");
+        }
+      } else if (err.request) {
+        console.log(err.request);
+      } else {
+        console.error(err.message);
+      }
+    });
+}
+
+function cancelToken() {
+  const source = axios.CancelToken.source();
+  axios
+    .get("https://jsonplaceholder.typicode.com/todos?_limit=5", {
+      cancelToken: source.token,
+    })
+    .then((res) => showOutput(res))
+    .catch((thrown) => {
+      if (axios.isCancel(thrown)) {
+        console.log("Request canceled", thrown.message);
+      }
+    });
+
+  if (true) {
+    source.cancel("Request canceled!");
+  }
 }
 
 axios.interceptors.request.use(
